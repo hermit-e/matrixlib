@@ -399,3 +399,15 @@ Výstup:
 ```
 
 ## 3. Programátorská část
+
+<par>První část programu obsahuje třídu Matrix, pomocí které uživatel zadá matici. Tato třída má atributy <strong>data</strong> a <strong>dim</strong>. V <strong>data</strong> jsou uloženy prvky matice v dvourozměrném poli, prvky mohou být typu <strong>int</strong> a <strong>float</strong>. <strong>dim</strong> je tuple <strong>(m, n)</strong>, kde <strong>m</strong> je počet řádků a <strong>n</strong> je počet sloupců. V třídě Matrix je naprogramováno několik metod pro vypisování, sčítání, odečítání, násobení, porovnávání a transponování matice.</par>
+
+<par>Druhá část programu obsahuje funkce, které mají jako vstup buď číslo <strong>int</strong>, nebo matici <strong>Matrix</strong>.</par>
+
+<par>Hlavní použité algoritmy jsou:
+- <em>Gaussova eliminace</em>, např. ve funkci <strong>REF</strong>
+- <em>Strassenův algoritmus</em>, ve funkci <strong>fast_mul</strong>
+- <em>Gramova–Schmidtova ortogonalizace</em>, ve funkci <strong>qr</strong>
+- <em>QR algoritmus</em>, ve funkci <strong>eig</strong></par>
+
+<par>Až na funkce <strong>qr</strong> a  <strong>eig</strong>, vužívají všechny funkce numericky stabilní algoritmy. Funkce <strong>eig</strong> používá <em>QR algoritmus</em>, který je numerický a u kterého není zaručena konvergence k vlastním číslům pro všechny vstupní matice.</par>
