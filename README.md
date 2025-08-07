@@ -254,4 +254,148 @@ Výstup:
 [5.0, -4.0, 1.0]
 ```
 
+### Řešení soustavy lineárních rovnic
+
+Pro vyřešení soustavy lineárních rovnic musí uživatel zadat matici soustavy a vektor pravých stran do funkce <strong>solve</strong>
+
+```python 
+print(solve(Matrix([[1, 2, 3], [3, 2, 1], [3, 1, 2]]), Matrix([[14], [10], [11]])))
+```
+
+Výstup:
+
+```python 
+[1.0]
+[2.0]
+[3.0]
+```
+
+### Řádkově odstupňovaný tvar matice
+
+Řádkově odstupňovaný tvar matice lze vypočítat pomocí funkce <strong>REF</strong>
+
+```python 
+print(REF(Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])))
+```
+
+Výstup:
+
+```python 
+[1, 2, 3]
+[0.0, -3.0, -6.0]
+[0.0, 0.0, 0.0]
+```
+
+### Choleského rozklad
+
+Pro výpočet Choleského rozkladu pozitivně definitní matice lze použít funkce <strong>cholesky</strong>
+
+```python 
+print(cholesky(Matrix([[9, 6, 3], [6, 8, 2], [3, 2, 5]])))
+```
+
+Výstup:
+```python
+[3.0, 0, 0]
+[2.0, 2.0, 0]
+[1.0, 0.0, 2.0]
+```
+
+### QR rozklad
+
+Pro výpočet QR rozkladu čtvercové matice (<strong>Q</strong> je ortogonální matice, <strong>R</strong> je horní trojúhelníková matice) lze použít funkci <strong>qr</strong>
+
+```python 
+Q, R = qr(Matrix([[1,0,-1],[-2,1,4], [1, 3, 3]]))
+print(Q)
+print(R)
+```
+
+Výstup:
+
+```python
+[0.4082482904638631, -0.8164965809277261, 0.4082482904638631]
+[-0.05314940034527339, 0.42519520276218714, 0.9035398058696477]
+[0.9113223768657689, 0.39056673294246624, -0.1301889109808269]
+[2.449489742783178, 0.408248290463863, -2.4494897427831788]
+[0, 3.13581462037113, 4.464549629002965]
+[0, 0, 0.26037782196164777]
+```
+
+### Rychlé násobení matic
+
+Pro rychlé vynásobení dvou matic lze využít funkci <strong>fast_mul</strong>
+
+```python 
+print(fast_mul(Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), Matrix([[2, 3, 1], [7, 4, 2], [2, 2, 9]])))
+```
+
+Výstup:
+
+```python 
+[22, 17, 32]
+[55, 44, 68]
+[88, 71, 104]
+```
+
+### Rychlý výpočet inverzní matice
+
+Pro rychlý výpočet inverzní matice (regulární, řádu mocniny dvou) lze použít funkci <strong>fast_inv</strong>
+
+```python 
+print(fast_inv(Matrix([[2, 1, 0, 0], [1, 1, 1, 0], [0, 1, 1, 1], [0, 0, 1, 1]])))
+```
+
+Výstup:
+
+```python 
+[0.5, 0.0, -0.5, 0.5]
+[0.0, 0.0, 1.0, -1.0]
+[-0.5, 1.0, -0.5, 0.5]
+[0.5, -1.0, 0.5, 0.5]
+```
+
+### Rychlý LUP rozklad
+
+Pro rychlý výpočet LUP rozkladu matice (regulární, počet řádků je mocnina dvou) lze použít funkci <strong>fast_LUP</strong>
+
+```python 
+L, U, P = fast_LUP(Matrix([[3, -7, -2, 2], [-3, 5, 1, 0], [6, -4, 0, -5], [-9, 5, -5, 12]]))
+print(L)
+print(U)
+print(P)
+```
+
+Výstup:
+
+```python 
+[1, 0, 0, 0]
+[-1.0, 1, 0, 0]
+[2.0, -4.999999999999999, 1, 0]
+[-3.0, 7.999999999999999, 3.000000000000006, 1]
+[3, -7, -2.0, 2]
+[0, -2.0, -1.0, 2.0]
+[0, 0, -0.9999999999999982, 0.9999999999999982]
+[0, 0, 0, -0.9999999999999991]
+[1, 0, 0, 0]
+[0, 1, 0, 0]
+[0, 0, 1, 0]
+[0, 0, 0, 1]
+```
+
+### Výpočet vlastních čísel
+
+Pro výpočet vlastních čísel matice lze využít funkci <strong>eig</strong>, uživatel může specifikovat počet iterací, jinak je počet iterací nastaven na 50.
+
+
+```python 
+print(eig(Matrix([[2, 1, 0, 0], [1, 1, 1, 0], [0, 1, 1, 1], [0, 0, 1, 1]]), 50))
+```
+
+Výstup:
+
+```python 
+[2.8793852415718155, 2.0000000000000036, 0.6527036409420062, -0.5320888825138217]
+```
+
 ## 3. Programátorská část
