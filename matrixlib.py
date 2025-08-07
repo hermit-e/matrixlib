@@ -500,7 +500,7 @@ def fast_LUP(A: Matrix):
         else:
             raise ValueError("Matrix is singular")
     
-    if (A.dim[0] & (A.dim[0]-1) != 0) or A.dim[0] == 0:    #checks of number of rows is a power of 2
+    if (A.dim[0] & (A.dim[0]-1) != 0) or A.dim[0] == 0:    #checks if number of rows is a power of 2
         raise ValueError("Number of rows is not a power of 2")
 
     k = A.dim[0]
