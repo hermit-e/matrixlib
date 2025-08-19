@@ -579,14 +579,54 @@ Výstup:
 
 ## 3. Programátorská část
 
-<par>První část programu obsahuje třídu Matrix, pomocí které uživatel zadá matici. Tato třída má atributy <strong>data</strong> a <strong>dim</strong>. V <strong>data</strong> jsou uloženy prvky matice v dvourozměrném poli, prvky mohou být typu <strong>int</strong> a <strong>float</strong>. <strong>dim</strong> je tuple <strong>(m, n)</strong>, kde <strong>m</strong> je počet řádků a <strong>n</strong> je počet sloupců. V třídě Matrix je naprogramováno několik metod pro vypisování, sčítání, odečítání, násobení, porovnávání a transponování matice.</par>
+<par>První část programu obsahuje třídy Matrix a Sparse, pomocí kterých uživatel zadá matici. Třída Matrix má atributy <strong>data</strong> a <strong>dim</strong>. V <strong>data</strong> jsou uloženy prvky matice v dvourozměrném poli, prvky mohou být typu <strong>int</strong>, <strong>float</strong> a <strong>complex</strong>. <strong>dim</strong> je tuple <strong>(m, n)</strong>, kde <strong>m</strong> je počet řádků a <strong>n</strong> je počet sloupců. V třídě Matrix je naprogramováno několik metod pro vypisování, sčítání, odečítání, násobení, porovnávání a transponování matice.</par>
 
-<par>Druhá část programu obsahuje funkce, které mají jako vstup buď číslo <strong>int</strong>, nebo matici <strong>Matrix</strong>.</par>
+<par>Třída Sparse má atributy <strong>data</strong> a <strong>dim</strong>. V <strong>data</strong> jsou uloženy prvky matice a jejich indexy řádku a sloupce v poli, prvky mohou být typu <strong>int</strong>, <strong>float</strong> a <strong>complex</strong>. <strong>dim</strong> je tuple <strong>(m, n)</strong>, kde <strong>m</strong> je počet řádků a <strong>n</strong> je počet sloupců, narozdíl od třídy Matrix musí rozměry matice uživatel specifikovat. V třídě Sparse je naprogramováno několik metod pro vypisování, sčítání, odečítání, násobení, porovnávání a transponování matice.</par>
 
-<par>Hlavní použité algoritmy jsou:
-- <em>Gaussova eliminace</em>, např. ve funkci <strong>REF</strong>
-- <em>Strassenův algoritmus</em>, ve funkci <strong>fast_mul</strong>
-- <em>Gramova–Schmidtova ortogonalizace</em>, ve funkci <strong>qr</strong>
-- <em>QR algoritmus</em>, ve funkci <strong>eig</strong></par>
+<par>Program využívá knihovny ze standardních knihoven Pythonu a to: <strong>copy</strong>, <strong>math</strong> a <strong>cmath</strong>.</par>
 
-<par>Až na funkce <strong>qr</strong> a  <strong>eig</strong>, vužívají všechny funkce numericky stabilní algoritmy. Funkce <strong>eig</strong> používá <em>QR algoritmus</em>, který je numerický a u kterého není zaručena konvergence k vlastním číslům pro všechny vstupní matice.</par>
+<par>Druhá část programu obsahuje funkce, které mají jako vstup buď číslo <strong>int</strong>, nebo matici <strong>Matrix</strong>/<strong>Sparse</strong>.</par>
+
+### Hlavní použité algoritmy
+
+#### Gaussova eliminace
+
+Gaussova eliminace převede matici libovolného typu do tzv. řádkově odstupňovaného tvaru, za pomocí tzv. elementárních řádkových úprav (prohazování řádků, násobení řádku nenulovým skalárem a příčítání násobku jednoho řádku k druhému)[^fn1]. Využita např. ve funkcích <strong>REF</strong> a <strong>sREF</strong>.
+
+[^fn1]: BARTO, Libor a TŮMA, Jiří. Lineární algebra. Online. Dostupné z: https://www.mff.cuni.cz/data/web/obsah/department_math/ka/skripta_la7.pdf. [cit. 2025-08-19].
+
+#### Strassenův algoritmus
+
+Strassenův algoritmus umožňuje rychlé vynásobení dvou matic. Matice se nejprve vyplní nulami, tak aby byly čtvercové a řádu mocniny dvou. Následně se rozdělí na 4 bloky a pomocí předem vypočítaných vzorců se bloky sčítají a násobí, přičemž násobení se provede rekurzivně, tak aby vyšel součin dvou matic[^fn2]. Algoritmus je využit ve funkci <strong>fast_mul</strong>.
+
+[^fn2]: STANOVSKÝ, David a BARTO, Libor. Počítačová algebra. Druhé, upravené vydání. Praha: Matfyzpress, 2017. ISBN 978-80-7378-340-2.
+
+#### Gramova–Schmidtova ortogonalizace
+
+Gramova-Schmidtova ortogonalizace dostane jako vstup lineárně nezávislou posloupnost vektorů a vrátí ortnonormální posloupnost vektorů se stejným lineárním obalem[^fn1]. Využita ve funkci <strong>qr</strong>.
+
+#### QR algoritmus
+
+QR algoritmus dostane jako vstup matici a postupným děláním QR rozkladu vstupní matice a násobením maticí Q a Q transponovanou za určitých podmínek konverguje matice k horní trojúhelníkové matici s vlastními čísli na diagonále[^fn3]. Využit ve funkci <strong>eig</strong>.
+
+[^fn3]: QR algorithm. Online. In: Wikipedia: the free encyclopedia. San Francisco (CA): Wikimedia Foundation, 2001-. Dostupné z: https://en.wikipedia.org/wiki/QR_algorithm. [cit. 2025-08-19].
+
+#### Rychlá inverze čtvercové matice
+
+Algoritmus dostane jako vstup regulární matici řádu mocniny dvou, kterou rozdělí na 4 bloky a pomocí předem vypočítaných vzorců se bloky sčítají a násobí, tak aby vyšla inverze matice. Při násobení matic je využit Strassenův algoritmus[^fn4]. Využita ve funkci <strong>fast_LUP</strong>.
+
+[^fn4]: Blockwise inversion. Online. In: Wikipedia: the free encyclopedia. San Francisco (CA): Wikimedia Foundation, 2001-. Dostupné z: https://en.wikipedia.org/wiki/Invertible_matrix#Blockwise_inversion. [cit. 2025-08-19].
+
+#### Rychlý LUP rozklad matice
+
+Algoritmus dostane jako vstup matici typu <strong>m</strong> x <strong>n</strong>, kde <strong>m</strong> je mocnina dvou a vrátí LUP rozklad matice právě tehdy, když je vstupní matice regulární. Matici podélně rozdělí na 2 bloky a následně z nich rekurzivně spočítá LUP rozklad a pomocí předem vypočítaných vzorců a správného umístění bloků zredujuje problém na vynásobí dvou matic, tady je použit Strassenův algoritmus[^fn5]. Funkce <strong>fast_LUP</strong>.
+
+[^fn5]: KUČERA, Luděk a NEŠETŘIL, Jaroslav. Algebraické metody diskrétní matematiky. Praha, 1989.
+
+#### Cooley-Turkeyův algoritmus
+
+Cooley-Turkeyův algoritmus dostane jako vstup vektor s počtem členů rovný mocnině dvou a vrátí jeho diskrétní Fourierovu transformaci. Vektor se podélně rozdělí na 2 vektory s polovičním počtem prvků, následně se rekurzivně určí jejich diskrétní Fourierova transformace a pomocí jedné vlastnosti primitivního kořenu jednotky se z těchto transformací určí diskrétní Fourierova transformace původního vektoru[^fn5]. Využit ve funkci <strong>conv</strong>.
+
+#### Rychlá konvoluce vektorů
+
+Vstupem jsou dva vektory stejné délky, výstup je konvoluce dvou vektorů. Nejprve algoritmus vyplní oba vektory nulami, tak aby byl počet jejich prvků mocnina dvou, následně provede diskrétní Fourierovu transformaci obou vektorů, zde je použit Cooley-Turkeyův algoritmus. Naposledy se využívá věty, že diskrétní Fourierova transformace konvoluce dvou vektorů je hadamardův součin diskrétních Fourierových transformací těchto vektorů[^fn5]. Funkce <strong>conv</strong>.
