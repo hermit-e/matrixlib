@@ -6,12 +6,19 @@ Vytvořit knihovnu s maticovými operacemi jako je např. sčítání, násoben�
 
 ## 2. Uživatelská část
 
-Knihovna používá třídu <strong>Matrix</strong>, pro vytvoření matice musí uživatel zadat jednotlivé prvky (typu <strong>int</strong>, nebo <strong>float</strong>) do dvojrozměrného pole:
+Knihovna používá třídy <strong>Matrix</strong> a <strong>Sparse</strong>, pro vytvoření matice musí uživatel zadat jednotlivé prvky (typu <strong>int</strong>, nebo <strong>float</strong>) do dvojrozměrného pole:
 
 ```python 
 A = Matrix([[1, 2.71],
             [3, 4.32]])
 ```
+
+Pro vytvoření řídké matice musí uživatel zadat nenulové prvky společně s indexy řádku a sloupce do pole (seřazené podle (řádek, sloupec)) a specifikovat rozměr matice:
+
+```python 
+B = Sparse([[0, 0, 2], [1, 1, -1], [1, 2, 4]], (4, 3))
+```
+
 ### Vypsání matice
 
 Pro vypsání matice stačí použít funkci <strong>print()</strong>
@@ -29,7 +36,7 @@ Výstup:
 
 ### Rozměr matice
 
-Rozměr matice lze získat pomocí atributu <strong>dim</strong>, jako tuple <strong>(m, n)</strong>, kde <strong>m</strong> je počet řádků a <strong>n</strong> je počet sloupců matice.
+Rozměr matice lze získat pomocí atributu <strong>dim</strong>, jako tuple <strong>(m, n)</strong>, kde <strong>m</strong> je počet řádků a <strong>n</strong> je počet sloupců matice. Lze použít i pro matice typu Sparse.
 
 
 ```python 
@@ -46,7 +53,7 @@ Výstup:
 
 ### Sčítání matic
 
-Pro součet dvou matic stačí použít operátor <strong>+</strong>
+Pro součet dvou matic stačí použít operátor <strong>+</strong>. Lze použít i pro matice typu Sparse.
 
 ```python 
 A = Matrix([[1, 2, 3],
@@ -67,7 +74,7 @@ Výstup:
 
 ### Odečítání matic
 
-Pro odečtení dvou matic stačí použít operátor <strong>-</strong>
+Pro odečtení dvou matic stačí použít operátor <strong>-</strong>. Lze použít i pro matice typu Sparse.
 
 ```python 
 A = Matrix([[1, 2, 3],
@@ -88,7 +95,7 @@ Výstup:
 
 ### Násobení matic
 
-Pro násobení dvou matic stačí použít operátor <strong>*</strong>
+Pro násobení dvou matic stačí použít operátor <strong>*</strong>. Lze použít i pro matice typu Sparse.
 
 ```python 
 A = Matrix([[1, 2],
@@ -109,7 +116,7 @@ Výstup:
 
 ### Rovnost matic
 
-Rovnost matic lze porovnávat pomocí operátoru <strong>==</strong>
+Rovnost matic lze porovnávat pomocí operátoru <strong>==</strong>. Lze použít i pro matice typu Sparse.
 
 ```python 
 A = Matrix([[1, 2],
@@ -129,7 +136,7 @@ False
 
 ### Transpozice matice
 
-Matici lze transponovat pomocí metody <strong>transpose</strong>
+Matici lze transponovat pomocí metody <strong>transpose</strong>. Lze použít i pro matice typu Sparse.
 
 
 ```python 
@@ -197,6 +204,36 @@ Výstup:
 
 ```python 
 32
+```
+
+### Hadamardův součin
+
+Hadamardův součin dvou matic stejného typu lze vypočítat pomocí funkce <strong>hadamard_product</strong>
+
+```python 
+print(hadamard_product(Matrix([[1, 3, 4], [5, 4, 2], [7, 5, 3]]), Matrix([[4, 5, 2], [9, 7, 1], [2, 2, 2]])))
+```
+
+Výstup:
+
+```python 
+[4, 15, 8]
+[45, 28, 2]
+[14, 10, 6]
+```
+
+### Stopa matice
+
+Stopu čtvercové matice lze vypočítat pomocí funkce <strong>trace</strong>
+
+```python 
+print(trace(Matrix([[1, 4, 7], [2, -1, 3], [3, 4, 0]])))
+```
+
+Výstup:
+
+```python 
+0
 ```
 
 ### LUP rozklad matice
@@ -396,6 +433,148 @@ Výstup:
 
 ```python 
 [2.8793852415718155, 2.0000000000000036, 0.6527036409420062, -0.5320888825138217]
+```
+
+### Rychlé umocňování matice
+
+Pro výpočet celočíselné mocniny čtvercové matice lze použít funkci <strong>powm</strong>.
+
+```python 
+print(powm(Matrix([[1, 2, 3], [1, 2, 3], [1, 1, 1]]), 4))
+```
+
+Výstup:
+
+```python 
+[126, 195, 264]
+[126, 195, 264]
+[69, 107, 145]
+```
+
+### Sinus z matice
+
+Pro výpočet sinu z čtvercové matice lze použít funkci <strong>sinm</strong>. Uživatel může specifikovat počet iterací.
+
+```python 
+print(sinm(Matrix([[1, 1, 0], [1, 0, 1], [0, 1, 1]]), 25))
+```
+
+Výstup:
+
+```python 
+[0.5835894705445261, 0.5835894705445261, -0.25788151426337047]
+[0.5835894705445261, -0.25788151426337047, 0.5835894705445261]
+[-0.25788151426337047, 0.5835894705445261, 0.5835894705445261]
+```
+
+### Cosinus z matice
+
+Pro výpočet cosinu z čtvercové matice lze použít funkci <strong>cosm</strong>. Uživatel může specifikovat počet iterací.
+
+```python 
+print(cosm(Matrix([[1, 0, 1], [1, 1, 1], [0, 1, 1]]), 25)) 
+```
+
+Výstup:
+
+```python 
+[0.6729735557184887, -0.25504795732268243, -0.6868620683472132]
+[-0.6868620683472132, 0.4179255983958064, -0.9419100256698957]
+[-0.25504795732268243, -0.6868620683472132, 0.4179255983958064]
+```
+
+### Maticová exponenciála
+
+Pro výpočet maticové exponenciály z čtvercové matice lze použít funkci <strong>expm</strong>. Uživatel může specifikovat počet iterací.
+
+```python 
+print(expm(Matrix([[1, 2, 0], [2, 2, 1], [0, 2, 0]]), 25))
+```
+Výstup:
+
+```python 
+[15.315254263497797, 20.825554710978267, 4.977932111577207]
+[20.825554710978267, 30.70596373056413, 7.923811299700528]
+[9.955864223154414, 15.847622599401056, 4.902476908008666]
+```
+
+### Rychlá diskrétní Fourierova transformace vektoru
+
+Pro výpočet diskrétní Fourierovy transformace vektoru v, vektor musí mít počet prvků rovný nějaké mocnině dvou, lze použít funkci <strong>fft</strong>.
+
+```python 
+print(fft(Matrix([[1], [2], [3], [4]])))
+```
+Výstup:
+
+```python 
+[(10+0j)]
+[(-2+2j)]
+[(-2+0j)]
+[(-1.9999999999999998-2j)]
+```
+
+### Rychlá inverzní diskrétní Fourierova transformace vektoru
+
+Pro výpočet inverzní diskrétní Fourierovy transformace vektoru v, vektor musí mít počet prvků rovný nějaké mocnině dvou, lze použít funkci <strong>ifft</strong>.
+
+```python 
+print(ifft(Matrix([[10], [-2 + 2j], [-2], [-2 - 2j]])))
+```
+Výstup:
+
+```python 
+[(1+0j)]
+[(2+6.123233995736766e-17j)]
+[(3+0j)]
+[(4-6.123233995736766e-17j)]
+```
+
+### Rychlá konvoluce vektorů
+
+Pro výpočet konvoluce dvou vektorů o stejném počtu prvků lze použít funkci <strong>conv</strong>. 
+
+```python 
+print(conv(Matrix([[1], [2], [4]]), Matrix([[1], [0], [1]])))
+```
+Výstup:
+
+```python 
+[1.0]
+[2.0]
+[5.0]
+[2.0]
+[4.0]
+```
+
+### Násobení řídké matice vektorem
+
+Pro vynásobení řídké matice (<strong>Sparse</strong>) vektorem (<strong>Matrix</strong>) lze použít funkci <strong>spmv</strong>.
+
+```python 
+print(spmv(Sparse([(0, 0, 1), (0, 1, 2), (1, 1, -2), (1, 2, 3), (2, 2, 4)], (3, 3)), Matrix([[1], [-1], [2]])))
+```
+Výstup:
+
+```python 
+[-1]
+[8]
+[8]
+```
+
+### Řádkově odstupňovaný tvar řídké matice
+
+Pro výpočet řádkově odstupňovaného tvaru řídké matice lze použít funkci <strong>sREF</strong>.
+
+```python 
+print(sREF(Sparse([[0, 1, 1], [0, 2, 2], [1, 0, 1], [2, 1, 3], [2, 2, 6]], (3, 4))))
+```
+Výstup:
+
+```python 
+[1, 0, 0, 0]
+[0, 1, 2, 0]
+[0, 0, 0, 0]
 ```
 
 ## 3. Programátorská část
