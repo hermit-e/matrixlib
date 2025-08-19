@@ -1,9 +1,11 @@
 import copy
+import math
+import cmath
 
 class Matrix:
     """
     Attributes:
-        data: 2 dimensional array of integers/floats.
+        data: 2 dimensional array of integers/floats/complex.
         dim: tuple encoding dimensions of matrix.
     
     Methods:
@@ -48,7 +50,7 @@ class Matrix:
             raise ValueError("Dimensions of matrices are not the same")
 
     def __mul__(self, other):
-        if (type(self) == Matrix) and ((type(other) == int) or (type(other) == float)): #scalar multiplication
+        if (type(self) == Matrix) and ((type(other) == int) or (type(other) == float) or (type(other) == complex)): #scalar multiplication
             return Matrix([[x*other for x in row] for row in self.data])
         if (type(self) == Matrix) and (type(other) == Matrix):   #standard matrix multiplication algorithm
             if self.dim[1] != other.dim[0]:
@@ -75,6 +77,104 @@ class Matrix:
         self.data = T.data
         self.dim = (T.dim[0], T.dim[1])
         return T
+
+class Sparse:
+    """
+    Attributes:
+        data: array of arrays with 3 elements [row, column, value], value can be integer/float/complex.
+        dim: tuple encoding dimensions of matrix.
+    
+    Methods:
+        transpose()
+            Returns transpose of a matrix.
+    """
+    def __init__(self, data, dim):
+        if (data != []) and ((max([x[0] for x in data]) >= dim[0]) or (max([x[1] for x in data]) >= dim[1]) or (min([x[1] for x in data]) < 0) or (min([x[0] for x in data]) < 0)):
+            raise ValueError("Element indeces are not compatible with matrix dimensions")
+
+        self.data = data    #list of 3 element lists [row, column, value]
+        self.dim = dim      #user needs to specify dimensions of matrix
+
+    def __repr__(self):
+        A = Empty(self.dim[0], self.dim[1])
+
+        for x in self.data:
+            A.data[x[0]][x[1]] = x[2] 
+        
+        s = ""        
+        for row in A.data:
+            s += str(row) + "\n"
+        s = s[:-1]
+        return s
+
+    def __eq__(self, other):
+        if (self.data != other.data) or (self.dim != other.dim):
+            return False
+        return True        
+
+    def __add__(self, other):
+        if self.dim == other.dim:
+            A = Sparse([], self.dim)
+            B = Sparse([], other.dim)
+            M = Sparse([], self.dim)
+            A.data = self.data.copy()
+            B.data = other.data.copy()
+
+            i = 0
+            j = 0
+            while (i < len(A.data)) and (j < len(B.data)):
+                if (A.data[i][0], A.data[i][1]) < (B.data[j][0], B.data[j][1]):
+                    M.data.append(A.data[i])
+                    i += 1
+
+                elif (A.data[i][0], A.data[i][1]) > (B.data[j][0], B.data[j][1]):
+                    M.data.append(B.data[j])
+                    j += 1
+
+                elif (A.data[i][0], A.data[i][1]) == (B.data[j][0], B.data[j][1]):
+                    M.data.append([A.data[i][0], A.data[i][1], A.data[i][2] + B.data[j][2]])
+                    i += 1
+                    j += 1
+
+            return M
+
+        else:
+            raise ValueError("Matrices are not of a same type")
+
+    def __mul__(self, other):
+        if (type(self) == Sparse) and ((type(other) == int) or (type(other) == float)): #multiplying by scalar
+            A = Sparse([], self.dim)
+            for x in self.data:
+                A.data.append([x[0], x[1], x[2]*other])
+            return A
+        
+        if (type(self) == Sparse) and (type(other) == Sparse):  #matrix multiplication
+            if (self.dim[1] == other.dim[0]):
+                A = Empty(self.dim[0], self.dim[1])
+                B = Empty(other.dim[0], other.dim[1])
+                for x in self.data:
+                    A.data[x[0]][x[1]] = x[2]
+                for x in other.data:
+                    B.data[x[0]][x[1]] = x[2]
+                
+                return A * B
+            else:
+                raise ValueError("Dimensions of matrices not compatible")
+        else:
+            raise TypeError("Unsupported type for multiplication") 
+
+    def __sub__(self, other):     #matrix subtraction  
+        if self.dim == other.dim:
+            return self + other*(-1)
+        else:
+            raise ValueError("Dimensions of matrices are not the same")          
+
+    def transpose(self):
+        """ Returns transpose of a sparse matrix."""
+        T = Sparse([[x[1], x[0], x[2]] for x in self.data], (self.dim[1], self.dim[0]))
+        self.data = T.data
+        self.dim = T.dim
+        return T                            
 
 #------------------Functions-------------------------#
 
@@ -121,6 +221,35 @@ def dot(a: Matrix, b: Matrix):
     c.data = a.data.copy()
     c.transpose()
     return (c*b).data[0][0]
+
+def hadamard_product(A: Matrix, B: Matrix):
+    """
+    Returns the hadamard product of matrices A and B
+
+    Examples:
+    >>> print(hadamard_product(Matrix([[1, 3, 4], [5, 4, 2], [7, 5, 3]]), Matrix([[4, 5, 2], [9, 7, 1], [2, 2, 2]])))
+    [4, 15, 8]
+    [45, 28, 2]
+    [14, 10, 6]
+    """
+    if (A.dim[0] == B.dim[0]) and (A.dim[1] == B.dim[1]):
+        C = Empty(A.dim[0], A.dim[1])
+        C.data = [[A.data[i][j]*B.data[i][j] for j in range(A.dim[1])] for i in range(A.dim[0])]
+        return C
+    else:
+        raise ValueError("Matrices must be of same type")
+
+def trace(A: Matrix):
+    """
+    Returns trace of a square matrix A
+
+    Examples:
+    >>> print(trace(Matrix([[1, 4, 7], [2, -1, 3], [3, 4, 0]])))
+    0
+    """
+    if (A.dim[0] != A.dim[1]):
+        raise ValueError("Matrix is not square")
+    return sum([A.data[i][i] for i in range(A.dim[0])])
 
 def LUP(A: Matrix):     
     """
@@ -500,7 +629,7 @@ def fast_LUP(A: Matrix):
         else:
             raise ValueError("Matrix is singular")
     
-    if (A.dim[0] & (A.dim[0]-1) != 0) or A.dim[0] == 0:    #checks if number of rows is a power of 2
+    if (A.dim[0] & (A.dim[0]-1) != 0) or A.dim[0] == 0:    #checks of number of rows is a power of 2
         raise ValueError("Number of rows is not a power of 2")
 
     k = A.dim[0]
@@ -569,3 +698,324 @@ def eig(A, ite=50):
         Q_T.transpose()
         A = Q*A*Q_T
     return [A.data[i][i] for i in range(A.dim[0])]  #the eigenvalues are on the diagonal
+
+def powm(A: Matrix, n: int):
+    """
+    Returns the square matrix A to the power of n
+
+    Examples:
+    >>> print(powm(Matrix([[1, 2, 3], [1, 2, 3], [1, 1, 1]]), 4))
+    [126, 195, 264]
+    [126, 195, 264]
+    [69, 107, 145]
+    """
+    if (n == 0) and (A != Empty(A.dim[0], A.dim[0])):
+        return Identity(A.dim[0])
+
+    if (n == 0) and (A == Empty(A.dim[0], A.dim[0])):
+        raise ValueError("Undefined expression")
+
+    if (n < 0):
+        A = inv(A)
+        n *= -1
+    
+    B = Identity(A.dim[0])
+    if (n > 0):
+        while n > 1:
+            if (n % 2) == 1:
+                B = B * A
+                n -= 1
+            A = A * A
+            n /= 2
+    return A * B
+
+def sinm(A: Matrix, ite = 25):
+    """
+    Returns the (matrix) sine of a square matrix A
+
+    Examples:
+    >>> print(sinm(Matrix([[1, 1, 0], [1, 0, 1], [0, 1, 1]])))
+    [0.5835894705445261, 0.5835894705445261, -0.25788151426337047]
+    [0.5835894705445261, -0.25788151426337047, 0.5835894705445261]
+    [-0.25788151426337047, 0.5835894705445261, 0.5835894705445261]
+    """
+    B = Empty(A.dim[0], A.dim[0])   #matrix sine stored here
+    A_2 = Empty(A.dim[0], A.dim[0]) #A squared
+    A_2.data = A.data.copy()
+    A_2 = A_2 * A_2
+    f = 1                           #odd number factorial
+
+    for i in range(1, ite + 1): #power series calculation
+        if i > 1:
+            f *= (2*i-1)*(2*i - 2)
+            A = A * A_2
+            B = B + A * (1 / f) * ((-1)**(i-1))
+        else:
+            B = A
+    return B 
+
+def cosm(A: Matrix, ite = 25):
+    """
+    Returns the (matrix) cosine of a square matrix A
+
+    Examples:
+    >>> print(cosm(Matrix([[1, 0, 1], [1, 1, 1], [0, 1, 1]]))) 
+    [0.6729735557184887, -0.25504795732268243, -0.6868620683472132]
+    [-0.6868620683472132, 0.4179255983958064, -0.9419100256698957]
+    [-0.25504795732268243, -0.6868620683472132, 0.4179255983958064]
+    """
+    C = Identity(A.dim[0])  #matrix power stored here
+    B = Identity(A.dim[0])  #matrix sine stored here
+    A_2 = Empty(A.dim[0], A.dim[0])
+    A_2.data = A.data.copy()
+    A_2 = A_2 * A_2
+    f = 1                   #even number factorial
+
+    for i in range(1, ite + 1): #power series calculation
+        if i > 1:
+            f *= (2*i-2)*(2*i - 3)
+            C = C * A_2
+            B = B + C * (1 / f) * ((-1)**(i-1))
+
+    return B 
+
+def expm(A: Matrix, ite = 25):
+    """
+    Returns the (matrix) exponential of a square matrix A
+
+    Examples:
+    >>> print(expm(Matrix([[1, 2, 0], [2, 2, 1], [0, 2, 0]])))
+    [15.315254263497797, 20.825554710978267, 4.977932111577207]
+    [20.825554710978267, 30.70596373056413, 7.923811299700528]
+    [9.955864223154414, 15.847622599401056, 4.902476908008666]
+    """  
+    C = Identity(A.dim[0])  #matrix power stored here
+    B = Identity(A.dim[0])  #matrix exp stored here
+    f = 1                   #factorial
+
+    for i in range(1, ite + 1): #power series calculation
+        f *= i
+        C = C * A
+        B = B + C * (1 / f)
+
+    return B
+
+def fft(v: Matrix):
+    """
+    Returns the discrete Fourier transform of vector v with 2**K elements, using the Cooley-Turkey algorithm. 
+
+    Examples:
+    >>> print(fft(Matrix([[1], [2], [3], [4]])))
+    [(10+0j)]
+    [(-2+2j)]
+    [(-2+0j)]
+    [(-1.9999999999999998-2j)]
+    """
+    if (v.dim[0] & (v.dim[0]-1) != 0) or v.dim[0] == 0:    #checks of number of elements is a power of 2
+        raise ValueError("Number of elements is not a power of 2")
+    u = Empty(v.dim[0], v.dim[1])
+    u.data = v.data.copy()
+    if u.dim[0] == 1:   #base case
+        return u
+                        #recursive case
+    N = u.dim[0]
+    u.transpose()
+    b = Matrix([[u.data[0][2*i] for i in range(N // 2)]])     #even number indexed elements of u
+    c = Matrix([[u.data[0][2*i+1] for i in range(N // 2)]])   #odd number indexed elements of u
+    b.transpose()
+    c.transpose()
+    
+    b = fft(b)
+    c = fft(c)
+    A = [[0] for i in range(N)]
+
+    for k in range(N // 2):
+        e = cmath.exp(-2 * math.pi * k * complex(0, 1) / N)
+        A[k][0] = b.data[k][0] + e * c.data[k][0]
+        A[k + (N // 2)][0] = b.data[k][0] - e * c.data[k][0]
+
+    return Matrix(A)
+
+def ifft(v: Matrix):
+    """
+    Returns the inverse discrete Fourier transform of vector v with 2**K elements, using the Cooley-Turkey algorithm.
+
+    Examples:
+    >>> print(ifft(Matrix([[10], [-2 + 2j], [-2], [-2 - 2j]])))
+    [(1+0j)]
+    [(2+6.123233995736766e-17j)]
+    [(3+0j)]
+    [(4-6.123233995736766e-17j)]
+    """
+    if (v.dim[0] & (v.dim[0]-1) != 0) or v.dim[0] == 0:    #checks of number of elements is a power of 2
+        raise ValueError("Number of elements is not a power of 2")
+
+    def recifft(v: Matrix):
+        u = Empty(v.dim[0], v.dim[1])
+        u.data = v.data.copy()
+        if u.dim[0] == 1:   #base case
+            return u
+                            #recursive case
+        N = u.dim[0]
+        u.transpose()
+        b = Matrix([[u.data[0][2*i] for i in range(N // 2)]])     #even number indexed elements of u
+        c = Matrix([[u.data[0][2*i+1] for i in range(N // 2)]])   #odd number indexed elements of u
+        b.transpose()
+        c.transpose()
+        
+        b = recifft(b)
+        c = recifft(c)
+        A = [[0] for i in range(N)]
+
+        for k in range(N // 2):
+            e = cmath.exp(2 * math.pi * k * complex(0, 1) / N)
+            A[k][0] = b.data[k][0] + e * c.data[k][0]
+            A[k + (N // 2)][0] = b.data[k][0] - e * c.data[k][0]
+        A = Matrix(A)
+        return A
+
+    return recifft(v) * (1 / v.dim[0])
+
+
+def conv(u: Matrix, v: Matrix):
+    """
+    Returns the convolution of vectors u and v with the same number of elements using FFT.
+
+    Examples:
+    >>> print(conv(Matrix([[1], [2], [4]]), Matrix([[1], [0], [1]])))
+    [1.0]
+    [2.0]
+    [5.0]
+    [2.0]
+    [4.0]
+    """
+    if u.dim[0] != v.dim[0]:
+        raise ValueError("Vectors must have identical number of elements")
+    
+    k = 1
+    while k < 2*u.dim[0]:    #finding the smallest n such that c <= 2**n
+        k *= 2
+    
+    U = Empty(1, k)
+    V = Empty(1, k)
+
+    u.transpose()
+    v.transpose()
+    U.data = [u.data[0] + [0 for i in range(k - u.dim[1])]] #u and v filled with zeros to have k elements
+    V.data = [v.data[0] + [0 for i in range(k - v.dim[1])]]
+    U.transpose()
+    V.transpose()
+
+    U = fft(U)
+    V = fft(V)
+    B = ifft(hadamard_product(U, V))
+    C = Empty(2*u.dim[1] - 1, 1)
+
+    for x in B.data:
+        if (type(x[0]) == complex) and (x[0].imag < 1e-10):
+            x[0] = x[0].real
+
+    for i in range(2*u.dim[1] - 1):
+        C.data[i] = B.data[i]
+
+    return C
+
+def spmv(A: Sparse, v: Matrix):
+    """
+    Returns the product A*v, where A is Sparse and v is vector (n x 1 Matrix)
+
+    Examples:
+    >>> print(spmv(Sparse([(0, 0, 1), (0, 1, 2), (1, 1, -2), (1, 2, 3), (2, 2, 4)], (3, 3)), Matrix([[1], [-1], [2]])))
+    [-1]
+    [8]
+    [8]
+    """
+    if (A.dim[1] != v.dim[0]):
+        raise ValueError("Dimensions are not compatible")
+
+    u = Empty(A.dim[0], 1)
+    i = 0
+    for x in A.data:
+        if x[0] == i:
+            u.data[i][0] += v.data[x[1]][0] * x[2]
+        else:
+            i = x[0]
+            u.data[i][0] += v.data[x[1]][0] * x[2]
+
+    return u        
+
+def sREF(M: Sparse):    
+    """
+    Returns reduced echelon form of (Sparse) matrix M
+
+    Examples:
+    >>> print(sREF(Sparse([[0, 1, 1], [0, 2, 2], [1, 0, 1], [2, 1, 3], [2, 2, 6]], (3, 4))))
+    [1, 0, 0, 0]
+    [0, 1, 2, 0]
+    [0, 0, 0, 0]
+    """ 
+    A = Sparse([], (M.dim[0], M.dim[1]))
+    A.data = M.data.copy()
+
+    if A.data == []: #Base case, zero matrix is in row echelon form
+        return A
+                     #Recursive case
+    column = A.dim[1]-1
+    index = 0   
+    for i in range(len(A.data)):
+        if (A.data[i][1] < column):
+            column = A.data[i][1]
+            index = i
+        if (A.data[i][1] == 0):
+            break
+
+    C_row = [i for i in range(len(A.data)) if A.data[i][0] == A.data[index][0]]
+    first_row = [i for i in range(len(A.data)) if A.data[i][0] == 0]
+    if A.data[index][0] > 0: #swapping with first row
+        for i in first_row:
+            A.data[i][0] = A.data[index][0]
+        for i in C_row:
+            A.data[i][0] = 0
+    A.data = sorted(A.data, key = lambda x: (x[0], x[1]))
+
+    C_row = [i for i in range(len(A.data)) if (A.data[i][1] == A.data[0][1]) and (A.data[i][0] != 0)]
+    first_row = [i for i in range(len(A.data)) if A.data[i][0] == 0]
+
+    for i in C_row: #elimination
+        f_row = first_row.copy()
+        row = [j for j in range(len(A.data)) if (A.data[j][0] == A.data[i][0])]
+        a = f_row.pop(0)        
+        b = row.pop(0)
+        c = -A.data[b][2]/A.data[a][2]
+        end = False
+        while end == False:
+            if f_row == []:
+                end = True
+            if A.data[a][1] > A.data[b][1]:
+                if row != []:
+                    b = row.pop(0)
+            elif A.data[a][1] == A.data[b][1]:
+                A.data[b][2] += c*A.data[a][2]
+                if f_row != []:
+                    a = f_row.pop(0)
+                if row != []:
+                    b = row.pop(0)
+            elif A.data[a][1] < A.data[b][1]:
+                A.data.append([A.data[b][0], A.data[a][1], c*A.data[a][2]])
+                if f_row != []:                
+                    a = f_row.pop(0)
+                if row != []:
+                    b = row.pop(0)
+    
+    A.data = sorted(A.data, key = lambda x: (x[0], x[1]))
+
+    for x in A.data:    #zero elements deletion
+        if abs(x[2]) < 1e-10:
+            A.data.remove(x)
+
+    R = Sparse([[A.data[i][0]-1, A.data[i][1]-1, A.data[i][2]] for i in range(len(A.data)) if (A.data[i][0] != 0)], (A.dim[0]-1, A.dim[1]-1))
+    B = sREF(R)
+    C = Sparse([], (A.dim[0], A.dim[1]))
+    C.data = [A.data[i] for i in range(len(A.data)) if A.data[i][0] == 0] + [[B.data[i][0] + 1, B.data[i][1] + 1, B.data[i][2]] for i in range(len(B.data))]  
+    return C
+
